@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+src-tauri/target/
+
+# Tauri generated schemas/cache
+src-tauri/gen/
+
+# Local tooling/session artifacts
+.omo/
+.playwright-mcp/
+yggdre-*.png
+!yggdre-preview-full.png
+
+# Logs and OS files
+*.log
+.DS_Store
+
+# Environment files
+.env
+.env.*
