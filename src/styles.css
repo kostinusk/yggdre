@@ -104,10 +104,10 @@ button.secondary {
 .hero {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 220px;
-  min-height: 300px;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  min-height: 220px;
   overflow: hidden;
-  padding: 2.2rem;
+  padding: 1.55rem 1.75rem;
 }
 
 .hero::after {
@@ -126,7 +126,7 @@ button.secondary {
 .hero-copy {
   position: relative;
   z-index: 1;
-  max-width: 820px;
+  max-width: 700px;
 }
 
 .eyebrow {
@@ -146,8 +146,8 @@ h2 {
 }
 
 h1 {
-  max-width: 780px;
-  font-size: clamp(3.25rem, 7.2vw, 6.65rem);
+  max-width: 680px;
+  font-size: clamp(2.55rem, 4.9vw, 4.65rem);
   letter-spacing: -0.045em;
 }
 
@@ -158,10 +158,10 @@ h2 {
 
 .lede {
   max-width: 660px;
-  margin: 1.3rem 0 0;
+  margin: 0.9rem 0 0;
   color: var(--muted);
-  font-size: 1.12rem;
-  line-height: 1.6;
+  font-size: 1rem;
+  line-height: 1.45;
 }
 
 .orb {
@@ -169,8 +169,8 @@ h2 {
   justify-self: center;
   display: grid;
   place-items: center;
-  width: 178px;
-  height: 178px;
+  width: 142px;
+  height: 142px;
   border: 1px solid rgba(211, 255, 91, 0.42);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, rgba(211, 255, 91, 0.95), rgba(117, 240, 132, 0.48) 38%, rgba(16, 33, 24, 0.2) 65%);
@@ -266,6 +266,19 @@ h2 {
   background: rgba(255, 255, 255, 0.04);
 }
 
+.facts .wide-fact {
+  grid-column: 1 / -1;
+}
+
+.facts .wide-fact dd {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.facts .wide-fact dd span {
+  flex: 1;
+}
+
 dt {
   color: var(--muted);
   font-size: 0.78rem;
@@ -288,8 +301,17 @@ dd span {
   white-space: nowrap;
 }
 
+.technical-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: clamp(0.72rem, 1.1vw, 0.86rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.25;
+}
+
 .inline-action {
   flex: none;
+  margin-left: auto;
   padding: 0.34rem 0.62rem;
   border-color: rgba(117, 240, 132, 0.34);
   background: rgba(117, 240, 132, 0.1);

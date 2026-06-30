@@ -232,7 +232,7 @@ function App() {
           </div>
 
           <dl className="facts">
-            <Fact label="IPv6" value={ipv6Address ?? "Needs admin API access"}>
+            <Fact label="IPv6" value={ipv6Address ?? "Needs admin API access"} className="wide-fact" valueClassName="technical-value">
               {ipv6Address && (
                 <button className="inline-action" onClick={() => void copyIpv6Address()} aria-label="Copy IPv6 address">
                   {copiedIpv6 === ipv6Address ? "Copied" : "Copy"}
@@ -343,12 +343,12 @@ function StatusCard({ label, value, detail, tone }: { label: string; value: stri
   );
 }
 
-function Fact({ label, value, children }: { label: string; value: string; children?: ReactNode }) {
+function Fact({ label, value, children, className, valueClassName }: { label: string; value: string; children?: ReactNode; className?: string; valueClassName?: string }) {
   return (
-    <div>
+    <div className={className}>
       <dt>{label}</dt>
       <dd>
-        <span>{value}</span>
+        <span className={valueClassName}>{value}</span>
         {children}
       </dd>
     </div>
