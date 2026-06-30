@@ -708,13 +708,15 @@ fn run_yggdrasilctl_pair(ctl: &Path) -> Result<(String, String), String> {
     if !self_result.success {
         return Err(join_output(self_result));
     }
+    let self_json = extract_json_stanza(&self_result.stdout, "getSelf")?;
 
     let peers_result = run_path_command(ctl, &["-json", "getPeers"])?;
     if !peers_result.success {
         return Err(join_output(peers_result));
     }
+    let peers_json = extract_json_stanza(&peers_result.stdout, "getPeers")?;
 
-    Ok((self_result.stdout, peers_result.stdout))
+    Ok((self_json, peers_json))
 }
 
 fn run_yggdrasilctl_pair_admin(ctl: &Path) -> Result<(String, String), String> {
@@ -724,7 +726,69 @@ fn run_yggdrasilctl_pair_admin(ctl: &Path) -> Result<(String, String), String> {
     let Some((self_part, peers_part)) = output.split_once(ADMIN_SPLIT) else {
         return Err("Admin yggdrasilctl output did not contain expected separator.".to_string());
     };
-    Ok((self_part.trim().to_string(), peers_part.trim().to_string()))
+    Ok((
+        extract_json_stanza(self_part, "getSelf")?,
+        extract_json_stanza(peers_part, "getPeers")?,
+    ))
+}
+
+fn extract_json_stanza(output: &str, label: &str) -> Result<String, String> {
+    for (start, character) in output.char_indices() {
+        if character != '{' && character != '[' {
+            continue;
+        }
+
+        if let Some(relative_end) = json_stanza_end(&output[start..]) {
+            let end = start + relative_end;
+            let candidate = output[start..end].trim();
+            if serde_json::from_str::<Value>(candidate).is_ok() {
+                return Ok(candidate.to_string());
+            }
+        }
+    }
+
+    let trimmed = output.trim();
+    if trimmed.is_empty() {
+        Err(format!("{label} returned no output"))
+    } else {
+        Err(trimmed.to_string())
+    }
+}
+
+fn json_stanza_end(input: &str) -> Option<usize> {
+    let mut stack = Vec::new();
+    let mut in_string = false;
+    let mut escaped = false;
+
+    for (index, character) in input.char_indices() {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if character == '\\' {
+                escaped = true;
+            } else if character == '"' {
+                in_string = false;
+            }
+            continue;
+        }
+
+        match character {
+            '"' => in_string = true,
+            '{' => stack.push('}'),
+            '[' => stack.push(']'),
+            '}' | ']' => {
+                if stack.pop() != Some(character) {
+                    return None;
+                }
+                if stack.is_empty() {
+                    return Some(index + character.len_utf8());
+                }
+            }
+            _ => {}
+        }
+    }
+
+    None
 }
 
 fn response_value(value: &Value) -> Option<&Value> {
@@ -1229,4 +1293,37 @@ fn applescript_quote(value: &str) -> String {
 
 fn path_to_string(path: PathBuf) -> String {
     path.to_string_lossy().to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn extracts_json_after_yggdrasilctl_logs() {
+        let output = concat!(
+            "2026/06/29 23:48:56 Connecting to UNIX socket /var/run/yggdrasil.sock\n",
+            "{\"status\":\"success\",\"response\":{\"build_name\":\"yggdrasil\"}}\n"
+        );
+
+        let json = extract_json_stanza(output, "getSelf").expect("JSON stanza should parse");
+
+        assert_eq!(
+            json,
+            "{\"status\":\"success\",\"response\":{\"build_name\":\"yggdrasil\"}}"
+        );
+    }
+
+    #[test]
+    fn rejects_yggdrasilctl_permission_output_without_json() {
+        let output = concat!(
+            "2026/06/29 23:48:56 Can't open config file from default location /etc/yggdrasil.conf\n",
+            "2026/06/29 23:48:56 Falling back to platform default unix:///var/run/yggdrasil.sock\n",
+            "2026/06/29 23:48:56 Fatal error: dial unix /var/run/yggdrasil.sock: connect: permission denied\n"
+        );
+
+        let error = extract_json_stanza(output, "getSelf").expect_err("fatal output is not JSON");
+
+        assert!(error.contains("permission denied"));
+    }
 }
