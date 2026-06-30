@@ -11,7 +11,8 @@ Yggdre helps configure and monitor a local Yggdrasil node on macOS: install/setu
 ## Features
 
 - Detect local `yggdrasil` and `yggdrasilctl` binaries.
-- Show daemon, launchd, config, and admin API status.
+- Show daemon, launchd, config, admin API status, and node identity.
+- Copy the node IPv6 address after an admin status refresh.
 - Fetch public peers from the public Yggdrasil peer registry.
 - Select fastest live peers from the registry.
 - Probe selected TCP/TLS/WS/WSS peers from this Mac.
@@ -108,6 +109,7 @@ Current checks used during MVP development:
 ```bash
 npm run build
 cd src-tauri && cargo fmt --check
+cd src-tauri && cargo test
 cd src-tauri && cargo check
 npm run tauri:build
 ```
@@ -119,7 +121,10 @@ Manual QA covered:
 - peer selection;
 - empty peer selection disables apply;
 - selected peer probing;
+- admin status refresh showing node IPv6/subnet/coords;
+- IPv6 copy button writing the address to the clipboard and switching to `Copied`;
 - apply-preview flow;
+- `yggdrasilctl` output with log-prefixed JSON and permission-denied text;
 - release binary smoke test.
 
 ## macOS notes
