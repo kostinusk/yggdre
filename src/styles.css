@@ -273,11 +273,31 @@ dt {
 }
 
 dd {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   margin: 0.42rem 0 0;
   overflow: hidden;
   font-weight: 800;
+}
+
+dd span {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.inline-action {
+  flex: none;
+  padding: 0.34rem 0.62rem;
+  border-color: rgba(117, 240, 132, 0.34);
+  background: rgba(117, 240, 132, 0.1);
+  color: var(--green-2);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .config-actions {

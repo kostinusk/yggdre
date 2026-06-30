@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { api, type ApplyResult, type Environment, type NodeStatus, type ProbeResult, type PublicPeer } from "./api";
 
 type BusyKey = "boot" | "status" | "peers" | "probe" | "apply" | "restart" | "open" | "setup";
@@ -16,8 +16,10 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [useAdmin, setUseAdmin] = useState(true);
   const [restartAfterApply, setRestartAfterApply] = useState(true);
+  const [copiedIpv6, setCopiedIpv6] = useState<string | null>(null);
 
   const configPath = environment?.configPath ?? environment?.configCandidates.find((candidate) => candidate.exists)?.path ?? "/etc/yggdrasil.conf";
+  const ipv6Address = status?.ipv6Address ?? null;
 
   const sortedPeers = useMemo(() => {
     return [...peers].sort((left, right) => {
@@ -34,6 +36,10 @@ function App() {
   useEffect(() => {
     void boot();
   }, []);
+
+  useEffect(() => {
+    setCopiedIpv6(null);
+  }, [ipv6Address]);
 
   async function boot() {
     await withBusy("boot", async () => {
@@ -142,6 +148,21 @@ function App() {
     });
   }
 
+  async function copyIpv6Address() {
+    if (!ipv6Address) return;
+    setError(null);
+
+    try {
+      await navigator.clipboard.writeText(ipv6Address);
+      setCopiedIpv6(ipv6Address);
+      setMessage("Copied IPv6 address to clipboard.");
+    } catch (unknownError) {
+      const nextError = unknownError instanceof Error ? unknownError.message : String(unknownError);
+      setError(nextError);
+      setMessage("Could not copy IPv6 address.");
+    }
+  }
+
   async function withBusy(key: BusyKey, task: () => Promise<void>) {
     setBusy((current) => new Set(current).add(key));
     setError(null);
@@ -211,7 +232,13 @@ function App() {
           </div>
 
           <dl className="facts">
-            <Fact label="IPv6" value={status?.ipv6Address ?? "Needs admin API access"} />
+            <Fact label="IPv6" value={ipv6Address ?? "Needs admin API access"}>
+              {ipv6Address && (
+                <button className="inline-action" onClick={() => void copyIpv6Address()} aria-label="Copy IPv6 address">
+                  {copiedIpv6 === ipv6Address ? "Copied" : "Copy"}
+                </button>
+              )}
+            </Fact>
             <Fact label="Subnet" value={status?.subnet ?? "Unknown"} />
             <Fact label="Coords" value={status?.coords ?? "Unknown"} />
             <Fact label="Version" value={[status?.buildName, status?.buildVersion].filter(Boolean).join(" ") || environment?.yggdrasil.version || "Unknown"} />
@@ -316,11 +343,14 @@ function StatusCard({ label, value, detail, tone }: { label: string; value: stri
   );
 }
 
-function Fact({ label, value }: { label: string; value: string }) {
+function Fact({ label, value, children }: { label: string; value: string; children?: ReactNode }) {
   return (
     <div>
       <dt>{label}</dt>
-      <dd>{value}</dd>
+      <dd>
+        <span>{value}</span>
+        {children}
+      </dd>
     </div>
   );
 }
