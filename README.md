@@ -6,6 +6,30 @@ Yggdre helps configure and monitor a local Yggdrasil node on macOS: install/setu
 
 > Status: macOS MVP. Linux and Windows support are planned later.
 
+## Quick start
+
+Run the real desktop app locally:
+
+```bash
+npm install
+npm run tauri:dev
+```
+
+Run browser-only preview with mock data:
+
+```bash
+npm run dev
+```
+
+Then open `http://127.0.0.1:1420`.
+
+Build and run the release binary:
+
+```bash
+npm run tauri:build
+./src-tauri/target/release/yggdre
+```
+
 ![Yggdre preview](./yggdre-preview-full.png)
 
 ## Features
